@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Photo Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Passport Photo Generator</h1>
+        
+        <div class="controls">
+            <input type="file" id="upload" accept="image/*">
+            <select id="sizeSelector">
+                <option value="35-45">Standard (35mm x 45mm)</option>
+                <option value="2-2">US Visa (2in x 2in)</option>
+                <option value="33-48">China (33mm x 48mm)</option>
+                <option value="35-35">India PAN (35mm x 35mm)</option>
+            </select>
+            <button onclick="generatePhoto()">Generate Photo</button>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <a id="downloadBtn" style="display:none;">Download Photo</a>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

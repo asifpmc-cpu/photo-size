@@ -1,0 +1,114 @@
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const upload = document.getElementById('upload');
+
+function generatePhoto() {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+            // Set canvas size based on selection (Example: 35x45mm)
+            canvas.width = 350; // Scaling for digital view
+            canvas.height = 450;
+            
+            // Draw image and crop to center
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(upload.files[0]);
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const upload = document.getElementById('upload');
+const sizeSelector = document.getElementById('sizeSelector');
+const downloadBtn = document.getElementById('downloadBtn');
+
+function generatePhoto() {
+    if (!upload.files[0]) return alert("Please upload a photo first!");
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const [widthMm, heightMm] = sizeSelector.value.split('-').map(Number);
+            
+            // Convert mm to pixels at 300 DPI (approx 11.8 pixels per mm)
+            const pxlW = Math.round(widthMm * 11.8);
+            const pxlH = Math.round(heightMm * 11.8);
+
+            canvas.width = pxlW;
+            canvas.height = pxlH;
+
+            // Simple "Aspect Fill" crop logic
+            const imgRatio = img.width / img.height;
+            const canvasRatio = pxlW / pxlH;
+            let drawW, drawH, offsetLeft, offsetTop;
+
+            if (imgRatio > canvasRatio) {
+                drawH = pxlH;
+                drawW = img.width * (pxlH / img.height);
+                offsetLeft = (pxlW - drawW) / 2;
+                offsetTop = 0;
+            } else {
+                drawW = pxlW;
+                drawH = img.height * (pxlW / img.width);
+                offsetLeft = 0;
+                offsetTop = (pxlH - drawH) / 2;
+            }
+
+            ctx.drawImage(img, offsetLeft, offsetTop, drawW, drawH);
+            
+            // Show Download Link
+            downloadBtn.style.display = "block";
+            downloadBtn.href = canvas.toDataURL("image/jpeg", 0.9);
+            downloadBtn.download = `passport_${widthMm}x${heightMm}.jpg`;
+            downloadBtn.innerText = "Download Ready Image";
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(upload.files[0]);
+}
+function generatePrintSheet() {
+    const sourceCanvas = document.getElementById('canvas');
+    const printCanvas = document.createElement('canvas');
+    const pCtx = printCanvas.getContext('2d');
+
+    // Standard 4x6 inch sheet at 300 DPI
+    printCanvas.width = 1800; 
+    printCanvas.height = 1200;
+    
+    // Fill background white
+    pCtx.fillStyle = "white";
+    pCtx.fillRect(0, 0, printCanvas.width, printCanvas.height);
+
+    const margin = 50;
+    const gap = 30;
+    let x = margin;
+    let y = margin;
+
+    // Loop to draw multiple copies
+    for (let i = 0; i < 8; i++) {
+        if (x + sourceCanvas.width > printCanvas.width) {
+            x = margin;
+            y += sourceCanvas.height + gap;
+        }
+        
+        // Draw the passport photo
+        pCtx.drawImage(sourceCanvas, x, y);
+        
+        // Draw faint cutting border
+        pCtx.strokeStyle = "#ccc";
+        pCtx.strokeRect(x, y, sourceCanvas.width, sourceCanvas.height);
+        
+        x += sourceCanvas.width + gap;
+    }
+
+    // Trigger Download for the full sheet
+    const link = document.createElement('a');
+    link.download = 'print_me_4x6.jpg';
+    link.href = printCanvas.toDataURL("image/jpeg", 0.9);
+    link.click();
+}
+
